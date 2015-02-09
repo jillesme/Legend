@@ -8,7 +8,7 @@ var router = express.Router();
 
 var config = {
   port: 3000,
-  dbFile: './server.db'
+  dbFile: './store.db'
 };
 
 var db = new sqlite3.Database(config.dbFile);
@@ -45,13 +45,13 @@ router.post('/', function (req, res) {
       since: moment().format('D MMMM YYYY HH:mm')
     };
 
+    // TODO: Track every legend ever
     var query = '' +
       'UPDATE legend ' +
       'SET current = \''+ response.legend +'\',' +
       'previous = \''+ response.previous +'\',' +
       'since = \'' + response.since  +'\'' +
       'WHERE id = 1'; // For now we only keep track of 1 legend
-      // TODO: Track every legend ever
 
     db.run(query);
 
