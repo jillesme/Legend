@@ -10,11 +10,11 @@ let Legend = React.createClass({
     this.setState(result);
   },
   componentDidMount () {
-    superagent.get('http://localhost:3000').end(function (error, res) {
+    superagent.get('http://localhost:3000').end((error, res) => {
       if (!error) {
         this.setState(JSON.parse(res.text));
       }
-    }.bind(this));
+    });
   },
   render () {
     return (
@@ -42,12 +42,12 @@ let NewLegend = React.createClass({
 
     superagent.post('http://localhost:3000').send({
       newLegend: legend
-    }).end(function (error, res) {
+    }).end((error, res) => {
       if (!error) {
         let response = JSON.parse(res.text);
         this.props.update(response);
       }
-    }.bind(this));
+    });
 
   },
   render () {
