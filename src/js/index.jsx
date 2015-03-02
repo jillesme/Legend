@@ -1,16 +1,20 @@
+let CONFIG = {
+  endpoint: 'http://localhost:3000'
+};
+
 let Legend = React.createClass({
   getInitialState () {
     return {
-      legend: '',
-      previous: '',
+      legend: '..',
+      previous: '..',
       since: ''
     }
   },
   updateLegend (result) {
     this.setState(result);
   },
-  componentDidMount () {
-    superagent.get('http://localhost:3000').end((error, res) => {
+  componentWillMount () {
+    superagent.get(CONFIG.endpoint).end((error, res) => {
       if (!error) {
         this.setState(JSON.parse(res.text));
       }
@@ -36,11 +40,11 @@ let NewLegend = React.createClass({
     let legend = this.refs.newlegend.getDOMNode().value;
 
     if (!/^[a-z\s]{3,18}$/gi.test(legend)) {
-      alert('Invalid legend "' +  legend + '"');
+      alert(`Invalid legend "${legend}" `);
       return;
     }
 
-    superagent.post('http://localhost:3000').send({
+    superagent.post(CONFIG.endpoint).send({
       newLegend: legend
     }).end((error, res) => {
       if (!error) {

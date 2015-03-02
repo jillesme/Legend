@@ -5,7 +5,7 @@ var sass = require('gulp-sass');
 var concat = require('gulp-concat');
 var newer = require('gulp-newer');
 var jsx = require('gulp-jsx');
-var to5 = require('gulp-6to5');
+var to5 = require('gulp-babel');
 
 /* --------------------- PATHS ---------------------*/
 var paths = {

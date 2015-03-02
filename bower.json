@@ -1,11 +1,11 @@
 {
-  "name": "LearnReact",
+  "name": "Legend",
   "version": "1.0.0",
   "authors": [
     "Jilles Soeters <info@jilles.me>"
   ],
-  "description": "Learning React",
-  "main": "index.js",
+  "description": "Appsbroker ping-pong legend",
+  "main": "server.js",
   "moduleType": [
     "es6"
   ],
