@@ -16,7 +16,10 @@ let Legend = React.createClass({
   componentWillMount () {
     superagent.get(CONFIG.endpoint).end((error, res) => {
       if (!error) {
-        this.setState(JSON.parse(res.text));
+        let response = JSON.parse(res.text);
+        this.setState(response);
+        // Set the title to the current legend
+        document.title = response.legend || document.title;
       }
     });
   },
@@ -60,6 +63,7 @@ let NewLegend = React.createClass({
         <p>New Legend: </p>
         <input type="text" placeholder={this.props.currentLegend} ref="newlegend" />
         <button onClick={this.setLegend}>Save</button>
+        <br/><small>Please don't abuse this guys (Ryan) I can't be fucked with building Google OAuth yet.. </small>
       </div>
     )
   }

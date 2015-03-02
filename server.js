@@ -33,7 +33,9 @@ router.all('/', function(req, res, next) {
  * Suffice client with the current legend and the previous one
  */
 router.get('/', function (req, res) {
-  db.get('SELECT current, previous, since FROM legend', function(err, row) {
+  db.get(''+
+  'SELECT current, previous, since FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
+  '', function(err, row) {
     res.end(
       JSON.stringify({
       legend: row.current,
@@ -48,7 +50,9 @@ router.get('/', function (req, res) {
  * Update the current legend
  */
 router.post('/', function (req, res) {
-  db.get('SELECT current FROM legend', function (err, row) {
+  db.get(''+ // Get the LAST legend
+  'SELECT current FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
+    '', function (err, row) {
 
     var response = {
       legend: req.body.newLegend,
@@ -56,13 +60,11 @@ router.post('/', function (req, res) {
       since: moment().format('D MMMM YYYY HH:mm') // NOW (server time)
     };
 
-    // TODO: Track every legend ever
     var query = '' +
-      'UPDATE legend ' +
-      'SET current = \''+ response.legend +'\',' +
-      'previous = \''+ response.previous +'\',' +
-      'since = \'' + response.since  +'\'' +
-      'WHERE id = 1'; // For now we only keep track of 1 legend
+      'INSERT INTO legend ' +
+      '(current, previous, since) ' +
+      'VALUES ' +
+      '(\'' + response.legend + '\', \'' + response.previous + '\', \'' + response.since  +'\')';
 
     db.run(query);
 
