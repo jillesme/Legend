@@ -1,5 +1,5 @@
 let CONFIG = {
-  endpoint: 'http://localhost:3000'
+  endpoint: 'http://localhost:3000/api/'
 };
 
 let Legend = React.createClass({
@@ -24,17 +24,40 @@ let Legend = React.createClass({
     });
   },
   render () {
+    let newLegend;
+    if (this.state.userAuthenticated) {
+      newLegend = (
+      <NewLegend
+        currentLegend={this.state.legend}
+        update={this.updateLegend} /> );
+    }
     return (
       <div>
         <h1>Current Legend {this.state.legend}</h1>
         <p>Since {this.state.since} </p>
         <h2>Previous legend <strike>{this.state.previous}</strike></h2>
 
-        <NewLegend
-          currentLegend={this.state.legend}
-          update={this.updateLegend} />
+        <Auth loggedIn={this.state.userAuthenticated} />
+
+        {newLegend}
       </div>
     )
+  }
+});
+
+let Auth = React.createClass({
+  render () {
+    let partial;
+    if (this.props.loggedIn) {
+      partial = (<a href="/logout">Logout</a>);
+    } else {
+      partial = (<a href="/verify">Authenticate</a>);
+    }
+    return (
+      <div>
+        {partial}
+      </div>
+    );
   }
 });
 
@@ -52,7 +75,11 @@ let NewLegend = React.createClass({
     }).end((error, res) => {
       if (!error) {
         let response = JSON.parse(res.text);
-        this.props.update(response);
+        if (response.error) {
+          alert(response.error);
+        } else {
+          this.props.update(response);
+        }
       }
     });
 
@@ -63,7 +90,6 @@ let NewLegend = React.createClass({
         <p>New Legend: </p>
         <input type="text" placeholder={this.props.currentLegend} ref="newlegend" />
         <button onClick={this.setLegend}>Save</button>
-        <br/><small>Please don't abuse this guys (Ryan) I can't be fucked with building Google OAuth yet.. </small>
       </div>
     )
   }

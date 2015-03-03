@@ -1,76 +1,51 @@
 /* Requirements */
+var path = require('path');
 var express = require('express');
+var passport = require('passport');
 var bodyParser = require('body-parser');
-var moment = require('moment');
-var sqlite3 = require('sqlite3');
+var session = require('express-session');
 
 /* Init a new app */
 var app = express();
-var router = express.Router();
+var routes = require('./routes');
 
-/* Defaults */
-var config = {
-  port: 3000,
-  dbFile: './store.db'
-};
-
-/* Connect to db */
-var db = new sqlite3.Database(config.dbFile);
+var config = require('./config');
 
 /* bodyParser is so we can read POSTed json data */
 app.use(bodyParser.json());
-app.use(router);
+app.use(session({
+  secret: 'being-fat-is-unhealthy',
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(express.static(__dirname + '/build'));
+app.use(routes);
 
-/* Remove this vile code when we're deployed */
-router.all('/', function(req, res, next) {
-  res.header('Content-Type', 'application/json');
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
-  next();
+/* serialize the session into user */
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+passport.deserializeUser(function(user, done) {
+  done(null, user);
 });
 
-/**
- * Suffice client with the current legend and the previous one
- */
-router.get('/', function (req, res) {
-  db.get(''+
-  'SELECT current, previous, since FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
-  '', function(err, row) {
-    res.end(
-      JSON.stringify({
-      legend: row.current,
-      previous: row.previous,
-      since: row.since
-      })
-    );
-  });
-});
+/* Passsport for OAUTH */
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
-/**
- * Update the current legend
- */
-router.post('/', function (req, res) {
-  db.get(''+ // Get the LAST legend
-  'SELECT current FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
-    '', function (err, row) {
-
-    var response = {
-      legend: req.body.newLegend,
-      previous: row.current,
-      since: moment().format('D MMMM YYYY HH:mm') // NOW (server time)
-    };
-
-    var query = '' +
-      'INSERT INTO legend ' +
-      '(current, previous, since) ' +
-      'VALUES ' +
-      '(\'' + response.legend + '\', \'' + response.previous + '\', \'' + response.since  +'\')';
-
-    db.run(query);
-
-    res.end(JSON.stringify(response));
-  })
-});
+passport.use(new GoogleStrategy({
+    clientID: '97694017682-dn8vk52g0m5807avc8dtu2r37caseq5f.apps.googleusercontent.com',
+    clientSecret: 'dTm2P85HtZ7qa9LsjN8KdtqT',
+    callbackURL: "http://localhost:3000/verify/callback",
+    passReqToCallback: true
+  }, function(request, accessToken, refreshToken, profile, done) {
+    // asynchronous verification, for effect...
+    process.nextTick(function () {
+      return done(null, profile);
+    });
+  }
+));
 
 app.listen(config.port);
 
