@@ -7,6 +7,7 @@ var moment = require('moment');
 var sqlite3 = require('sqlite3');
 
 var utils = require('../utils.js');
+var sql = require('../sql.js');
 
 /* Connect to db */
 var config = require('../config');
@@ -45,9 +46,7 @@ router.get('/logout', function (req, res) {
  */
 router.get('/api', function (req, res) {
   var user = req.session.passport.user;
-  db.get(''+
-         'SELECT current, previous, since FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
-         '', function(err, row) {
+  db.get(sql.getLegend, function(err, row) {
     var response = {
       legend: row.current,
       previous: row.previous,
@@ -67,9 +66,7 @@ router.get('/api', function (req, res) {
  * Update the current legend
  */
 router.post('/api', function (req, res) {
-  db.get(''+ // Get the LAST legend
-         'SELECT current FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
-         '', function (err, row) {
+  db.get(sql.getLastLegend, function (err, row) {
 
     var current = row.current;
 
@@ -88,11 +85,10 @@ router.post('/api', function (req, res) {
       since: moment().format('D MMMM YYYY HH:mm') // NOW (server time)
     };
 
-    var query = '' +
-      'INSERT INTO legend ' +
-      '(current, previous, since) ' +
-      'VALUES ' +
-      '(\'' + response.legend + '\', \'' + response.previous + '\', \'' + response.since  +'\')';
+    var query = sql.setLegend
+                .replace('[legend]', response.legend)
+                .replace('[previous]', response.previous)
+                .replace('[since]', response.since);
 
     db.run(query);
 
