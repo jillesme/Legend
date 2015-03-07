@@ -1,11 +1,12 @@
 /* ----------------- DEPENDENCIES -----------------*/
 var gulp = require('gulp');
-var connect = require('gulp-connect');
 var sass = require('gulp-sass');
 var concat = require('gulp-concat');
 var newer = require('gulp-newer');
-var jsx = require('gulp-jsx');
-var to5 = require('gulp-babel');
+var browserify = require('browserify');
+var babelify = require('babelify');
+var source = require('vinyl-source-stream');
+
 
 /* --------------------- PATHS ---------------------*/
 var paths = {
@@ -13,14 +14,6 @@ var paths = {
   source: './src',
   libs: ['./lib/react/react.js', './lib/superagent/superagent.js']
 };
-
-/* ------------------ WEB SERVER -------------------*/
-gulp.task('server', function () {
-  return connect.server({
-    root: paths.build,
-    livereload: true
-  });
-});
 
 /* ---------------- FILE WATCHER ------------------*/
 gulp.task('watcher', function () {
@@ -31,25 +24,27 @@ gulp.task('watcher', function () {
 });
 
 /* ---------------- SOURCE TASKS ------------------*/
+
 gulp.task('handle-javascript', function () {
-  return gulp.src(paths.source + '/js/**/*.jsx')
-    .pipe(connect.reload())
-    .pipe(jsx())
-    .pipe(to5())
-    .pipe(concat('app.js'))
-    .pipe(gulp.dest(paths.build + '/js'));
+  return browserify({
+    entries: paths.source + '/js/index.jsx',
+    extensions: ['.jsx'],
+    debug: true
+    })
+  .transform(babelify)
+  .bundle()
+  .pipe(source('app.js'))
+  .pipe(gulp.dest(paths.build + '/js'));
 });
 
 gulp.task('compile-sass', function () {
   return gulp.src(paths.source + '/scss/**/*.scss')
     .pipe(sass())
-    .pipe(connect.reload())
     .pipe(gulp.dest(paths.build + '/css'));
 });
 
 gulp.task('copy-html', function () {
   return gulp.src(paths.source + '/*.html')
-    .pipe(connect.reload())
     .pipe(gulp.dest(paths.build));
 });
 

@@ -6,6 +6,8 @@ var router = express.Router();
 var moment = require('moment');
 var sqlite3 = require('sqlite3');
 
+var utils = require('../utils.js');
+
 /* Connect to db */
 var config = require('../config');
 var db = new sqlite3.Database(config.dbFile);
@@ -20,8 +22,8 @@ router.all('/api', function(req, res, next) {
 
 /* Google OAUTH */
 router.get('/', function (req, res) {
-    var index = path.resolve(__dirname + '/../build/index.html');
-    res.sendfile(index);
+  var index = path.resolve(__dirname + '/../build/index.html');
+  res.sendfile(index);
 });
 
 router.get('/verify', passport.authenticate('google', {
@@ -39,21 +41,21 @@ router.get('/logout', function (req, res) {
 });
 
 /**
-* Suffice client with the current legend and the previous one
-*/
+ * Suffice client with the current legend and the previous one
+ */
 router.get('/api', function (req, res) {
   var user = req.session.passport.user;
   db.get(''+
-  'SELECT current, previous, since FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
-  '', function(err, row) {
+         'SELECT current, previous, since FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
+         '', function(err, row) {
     var response = {
       legend: row.current,
       previous: row.previous,
       since: row.since,
       userAuthenticated: !!user
-      };
+    };
 
-      if (response.userAuthenticated) response.sid = req.sessionID;
+    if (!!user) { response.user = utils.buildUserObj(user); }
 
     res.end(
       JSON.stringify(response)
@@ -62,12 +64,12 @@ router.get('/api', function (req, res) {
 });
 
 /**
-* Update the current legend
-*/
+ * Update the current legend
+ */
 router.post('/api', function (req, res) {
   db.get(''+ // Get the LAST legend
-  'SELECT current FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
-    '', function (err, row) {
+         'SELECT current FROM legend WHERE id = (SELECT MAX(id) FROM legend)' +
+         '', function (err, row) {
 
     var current = row.current;
 
@@ -95,8 +97,7 @@ router.post('/api', function (req, res) {
     db.run(query);
 
     res.end(JSON.stringify(response));
-  })
+  });
 });
-
 
 module.exports = router;

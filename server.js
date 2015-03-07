@@ -1,5 +1,4 @@
 /* Requirements */
-var path = require('path');
 var express = require('express');
 var passport = require('passport');
 var bodyParser = require('body-parser');
@@ -18,6 +17,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
+/* Passport for Google Auth */
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(__dirname + '/build'));
@@ -37,7 +37,7 @@ var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 passport.use(new GoogleStrategy({
     clientID: '97694017682-dn8vk52g0m5807avc8dtu2r37caseq5f.apps.googleusercontent.com',
     clientSecret: 'dTm2P85HtZ7qa9LsjN8KdtqT',
-    callbackURL: "http://localhost:3000/verify/callback",
+    callbackURL: 'http://localhost:3000/verify/callback',
     passReqToCallback: true
   }, function(request, accessToken, refreshToken, profile, done) {
     // asynchronous verification, for effect...
